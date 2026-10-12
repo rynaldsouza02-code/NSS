@@ -20,13 +20,17 @@
   <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
+  <!-- Firebase Realtime Cloud Sync (Multi-Device Live Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <!-- Cache control for instant updates on mobile -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=2026.9">
+  <link rel="stylesheet" href="styles.css?v=2026.10">
 </head>
 <body class="theme-light">
 
@@ -576,6 +580,39 @@
         <!-- Tab D: Backup & Reset -->
         <div id="adminTabData" class="admin-pane">
           <div class="tools-grid">
+            <!-- Firebase Cloud Sync Card -->
+            <div class="tool-card" style="grid-column: 1 / -1; border-color: rgba(30, 58, 138, 0.35); background: var(--bg-card);">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.4rem;">
+                <h5 style="color: var(--navy); margin-bottom:0;"><i class="fa-solid fa-cloud-bolt"></i> Real-Time Multi-Device Cloud Sync (Firebase)</h5>
+                <span id="cloudSyncStatusBadge" class="live-status-pill" style="font-size:0.7rem; padding: 3px 8px;">
+                  <span class="live-dot" style="background:#D97706;"></span>
+                  <span>LOCAL MODE</span>
+                </span>
+              </div>
+              <p style="margin-bottom:0.75rem;">Sync scores, teams, and photos across <strong>every phone, laptop, and projector in real-time</strong> with zero lag.</p>
+              
+              <div id="firebaseConfigForm">
+                <div class="form-group" style="margin-bottom:0.5rem;">
+                  <label style="font-size:0.74rem; font-weight:700;">Paste Firebase Realtime Database URL or Config JSON:</label>
+                  <input type="text" id="firebaseDbUrlInput" placeholder="https://your-project-default-rtdb.firebaseio.com" style="font-size:0.8rem; padding:0.45rem 0.65rem;">
+                </div>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button type="button" id="saveCloudSyncBtn" class="btn btn-primary btn-sm"><i class="fa-solid fa-link"></i> Connect &amp; Enable Live Sync</button>
+                  <button type="button" id="toggleFirebaseHelpBtn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-circle-question"></i> How to get free URL (2 mins)</button>
+                </div>
+              </div>
+
+              <!-- Quick 2-Minute Setup Help -->
+              <div id="firebaseHelpBox" style="display:none; margin-top:0.75rem; padding:0.75rem; background:var(--bg-subtle); border-radius:var(--radius-sm); font-size:0.75rem; line-height:1.45;">
+                <strong>Easy 2-Minute Free Firebase Setup:</strong>
+                <ol style="margin: 0.35rem 0 0.35rem 1.2rem; padding: 0;">
+                  <li>Visit <a href="https://console.firebase.google.com/" target="_blank" style="color:var(--navy); font-weight:700;">console.firebase.google.com</a> &rarr; click <strong>Add project</strong>.</li>
+                  <li>Click <strong>Build</strong> &rarr; <strong>Realtime Database</strong> &rarr; <strong>Create Database</strong> (select <em>Test mode</em> so all devices can read/write).</li>
+                  <li>Copy the database URL (e.g. <code>https://nss-camp-default-rtdb.firebaseio.com</code>) and paste it above!</li>
+                </ol>
+              </div>
+            </div>
+
             <div class="tool-card">
               <h5><i class="fa-solid fa-file-csv"></i> Export CSV</h5>
               <p>Download the latest scoreboard as a spreadsheet.</p>
@@ -635,6 +672,6 @@
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Main JavaScript -->
-  <script src="app.js?v=2026.9"></script>
+  <script src="app.js?v=2026.10"></script>
 </body>
 </html>

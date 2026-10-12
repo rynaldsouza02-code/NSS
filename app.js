@@ -47,12 +47,19 @@
   // Audio Synthesizer
   let audioCtx = null;
 
+  // Firebase Realtime Cloud Sync State
+  let firebaseDb = null;
+  let isCloudSyncActive = false;
+  let isReceivingCloudUpdate = false;
+  const FIREBASE_SYNC_NODE = 'nss_camp_live_v1';
+
   // ================= INITIALIZATION =================
   function init() {
     setupIntroSplash();
     initTheme();
     loadStateFromStorage();
     setupBroadcastChannel();
+    initFirebase();
     bindEvents();
     renderAll();
   }
@@ -169,8 +176,169 @@
           timestamp: Date.now()
         });
       }
+
+      // Sync across all systems and devices in real-time
+      if (broadcast) {
+        pushToFirebase(updatedTeamId, pointsDelta);
+      }
     } catch (e) {
       console.error('Storage save error:', e);
+    }
+  }
+
+  // ================= FIREBASE REALTIME CLOUD SYNC =================
+  function initFirebase() {
+    const savedConfig = localStorage.getItem('nss_firebase_config_v1');
+    if (savedConfig) {
+      connectFirebase(savedConfig, false);
+    } else {
+      updateCloudSyncStatusUI(false);
+    }
+  }
+
+  function connectFirebase(rawInput, showFeedback = true) {
+    if (typeof firebase === 'undefined') {
+      console.warn('Firebase SDK not loaded');
+      return;
+    }
+    try {
+      let configObj = null;
+      let trimmed = rawInput.trim();
+
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        configObj = JSON.parse(trimmed);
+      } else if (trimmed.startsWith('http')) {
+        configObj = { databaseURL: trimmed };
+      }
+
+      if (!configObj || !configObj.databaseURL) {
+        if (showFeedback) showToast('Please enter a valid Firebase Realtime Database URL', 'error');
+        return;
+      }
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(configObj);
+      }
+      firebaseDb = firebase.database();
+      localStorage.setItem('nss_firebase_config_v1', JSON.stringify(configObj));
+
+      setupFirebaseRealtimeListener();
+      updateCloudSyncStatusUI(true);
+
+      if (showFeedback) {
+        showToast('Connected to Firebase! Live multi-device sync is now ACTIVE', 'success');
+        pushToFirebase();
+      }
+    } catch (err) {
+      console.error('Firebase connection error:', err);
+      updateCloudSyncStatusUI(false);
+      if (showFeedback) showToast('Failed to connect to Firebase: ' + err.message, 'error');
+    }
+  }
+
+  function setupFirebaseRealtimeListener() {
+    if (!firebaseDb) return;
+    const ref = firebaseDb.ref(FIREBASE_SYNC_NODE);
+
+    ref.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      isReceivingCloudUpdate = true;
+      try {
+        const prevLeaderId = getSortedTeams()[0]?.id;
+
+        if (Array.isArray(data.teams)) {
+          teams = data.teams;
+        }
+        if (Array.isArray(data.photos)) {
+          photos = data.photos;
+        }
+        if (data.settings && typeof data.settings === 'object') {
+          settings = { ...DEFAULT_SETTINGS, ...data.settings };
+        }
+
+        // Cache locally for instant offline loading
+        localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
+        localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+
+        renderAll();
+
+        // If there was an update from another system with points
+        if (data.updatedTeamId && data.delta) {
+          const updatedTeam = teams.find(t => t.id === data.updatedTeamId);
+          if (updatedTeam) {
+            const sign = data.delta > 0 ? `+${data.delta}` : `${data.delta}`;
+            showToast(`⚡ Live Sync: ${sign} pts to ${updatedTeam.name}!`, 'info');
+            if (data.delta > 0 && settings.soundEnabled) playChime(true);
+          }
+        }
+
+        // Check if 1st place changed
+        const newLeaderId = getSortedTeams()[0]?.id;
+        if (newLeaderId && prevLeaderId && newLeaderId !== prevLeaderId) {
+          triggerConfetti();
+        }
+      } finally {
+        isReceivingCloudUpdate = false;
+      }
+    }, (err) => {
+      console.warn('Firebase sync listener error:', err);
+    });
+  }
+
+  function pushToFirebase(updatedTeamId = null, delta = 0) {
+    if (!firebaseDb || isReceivingCloudUpdate) return;
+    try {
+      firebaseDb.ref(FIREBASE_SYNC_NODE).set({
+        teams,
+        photos,
+        settings,
+        lastUpdated: Date.now(),
+        updatedTeamId,
+        delta
+      });
+    } catch (err) {
+      console.warn('Firebase push error:', err);
+    }
+  }
+
+  function updateCloudSyncStatusUI(connected) {
+    isCloudSyncActive = connected;
+    const badge = document.getElementById('cloudSyncStatusBadge');
+    const livePills = document.querySelectorAll('.live-status-pill');
+    const input = document.getElementById('firebaseDbUrlInput');
+
+    if (badge) {
+      if (connected) {
+        badge.innerHTML = '<span class="live-dot" style="background:#16A34A;"></span><span>LIVE CLOUD SYNC ACTIVE</span>';
+      } else {
+        badge.innerHTML = '<span class="live-dot" style="background:#D97706;"></span><span>LOCAL MODE (OFFLINE)</span>';
+      }
+    }
+
+    livePills.forEach(p => {
+      if (p.id === 'cloudSyncStatusBadge') return;
+      if (connected) {
+        p.innerHTML = '<span class="live-dot" style="background:#16A34A;"></span><span>CLOUD SYNC ACTIVE</span>';
+        p.title = 'Changes instantly reflect on all phones & screens worldwide';
+      } else {
+        p.innerHTML = '<span class="live-dot" style="background:#D97706;"></span><span>LOCAL MODE</span>';
+        p.title = 'Saved on this browser. Connect Firebase in Admin to sync across all phones';
+      }
+    });
+
+    if (input && connected) {
+      const saved = localStorage.getItem('nss_firebase_config_v1');
+      if (saved) {
+        try {
+          const cfg = JSON.parse(saved);
+          input.value = cfg.databaseURL || saved;
+        } catch (_) {
+          input.value = saved;
+        }
+      }
     }
   }
 
@@ -768,6 +936,27 @@
     document.getElementById('resetPointsBtn').addEventListener('click', resetPoints);
     const clearTeamsBtn = document.getElementById('clearAllTeamsBtn');
     if (clearTeamsBtn) clearTeamsBtn.addEventListener('click', clearAllTeams);
+
+    // Cloud Sync (Firebase)
+    const saveCloudBtn = document.getElementById('saveCloudSyncBtn');
+    if (saveCloudBtn) {
+      saveCloudBtn.addEventListener('click', () => {
+        const input = document.getElementById('firebaseDbUrlInput');
+        if (input && input.value.trim()) {
+          connectFirebase(input.value.trim(), true);
+        } else {
+          showToast('Please enter your Firebase Database URL or Config', 'error');
+        }
+      });
+    }
+
+    const toggleHelpBtn = document.getElementById('toggleFirebaseHelpBtn');
+    if (toggleHelpBtn) {
+      toggleHelpBtn.addEventListener('click', () => {
+        const box = document.getElementById('firebaseHelpBox');
+        if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      });
+    }
 
     // Close buttons & Backdrop clicks
     document.querySelectorAll('.modal-close-btn, [data-close]').forEach(btn => {
