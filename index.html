@@ -108,13 +108,13 @@
         <div class="camp-banner">
           <div class="banner-info">
             <div class="banner-chip" id="campTag"><i class="fa-solid fa-campground"></i> Annual Special Camp 2026</div>
-            <h2 class="banner-heading" id="eventTitle">Inter-Squad Camp Leaderboard</h2>
+            <h2 class="banner-heading" id="eventTitle">Inter-Team Camp Leaderboard</h2>
             <p class="banner-subheading" id="eventSubtitle">Real-time point scoring for Shramadaan, Cultural Events, Camp Discipline &amp; Community Service.</p>
           </div>
           <div class="banner-stats">
             <div class="stat-box">
               <span class="stat-num" id="totalTeamsCount">0</span>
-              <span class="stat-lbl">Competing Squads</span>
+              <span class="stat-lbl">Competing Teams</span>
             </div>
             <div class="stat-box">
               <span class="stat-num" id="totalPointsCount">0</span>
@@ -136,7 +136,7 @@
         <div class="scoreboard-card">
           <div class="scoreboard-header">
             <div>
-              <h3 class="scoreboard-title"><i class="fa-solid fa-list-ol"></i> Squad Standings Table</h3>
+              <h3 class="scoreboard-title"><i class="fa-solid fa-list-ol"></i> Team Standings Table</h3>
               <p class="scoreboard-desc">Live ranked scores updated instantaneously from the admin scoring desk.</p>
             </div>
             <div class="scoreboard-tools">
@@ -158,9 +158,8 @@
               <thead>
                 <tr>
                   <th style="width: 75px; text-align: center;">Rank</th>
-                  <th>Squad Name &amp; Motto</th>
-                  <th>Squad Leader</th>
-                  <th style="text-align: center; width: 110px;">Volunteers</th>
+                  <th>Team Name</th>
+                  <th>Team Leader</th>
                   <th>Latest Activity Points</th>
                   <th style="text-align: right; width: 130px;">Points</th>
                   <th style="text-align: center; width: 90px;">Audit</th>
@@ -175,8 +174,8 @@
           <!-- Empty State -->
           <div id="noTeamsState" class="empty-box" style="display: none;">
             <i class="fa-solid fa-users-slash empty-ico"></i>
-            <h4>No Squads Found</h4>
-            <p>No squads currently match your search query.</p>
+            <h4>No Teams Found</h4>
+            <p>No teams currently match your search query.</p>
           </div>
         </div>
 
@@ -226,7 +225,7 @@
           </div>
           <div>
             <select id="activityTeamFilter" class="simple-select">
-              <option value="ALL">All Competing Squads</option>
+              <option value="ALL">All Competing Teams</option>
             </select>
           </div>
         </div>
@@ -400,10 +399,9 @@
         <div class="form-group">
           <label for="adminPasscode">Security Passcode</label>
           <div class="pwd-input-wrap">
-            <input type="password" id="adminPasscode" placeholder="Enter PIN (Default: nss@2026)" required autofocus>
+            <input type="password" id="adminPasscode" placeholder="Enter Admin Password" required autofocus>
             <button type="button" id="togglePasswordBtn" class="pwd-toggle"><i class="fa-solid fa-eye"></i></button>
           </div>
-          <p class="field-hint">Default passcode is <code>nss@2026</code>.</p>
         </div>
         <div id="authErrorMsg" class="error-banner" style="display: none;"></div>
         <div class="modal-footer">
@@ -434,7 +432,7 @@
       <!-- Admin Tabs -->
       <div class="admin-tab-bar">
         <button class="admin-tab-btn active" data-atab="award"><i class="fa-solid fa-plus-minus"></i> Award Points</button>
-        <button class="admin-tab-btn" data-atab="squads"><i class="fa-solid fa-users"></i> Manage Squads (<span id="adminSquadsCount">0</span>)</button>
+        <button class="admin-tab-btn" data-atab="squads"><i class="fa-solid fa-users"></i> Manage Teams (<span id="adminSquadsCount">0</span>)</button>
         <button class="admin-tab-btn" data-atab="photos"><i class="fa-solid fa-images"></i> Manage Photos (<span id="adminPhotosCount">0</span>)</button>
         <button class="admin-tab-btn" data-atab="data"><i class="fa-solid fa-database"></i> Backup &amp; Reset</button>
       </div>
@@ -448,9 +446,9 @@
               <h4><i class="fa-solid fa-star"></i> Quick Score Entry</h4>
 
               <div class="form-group">
-                <label for="awardTargetTeam">Target Squad <span class="req">*</span></label>
+                <label for="awardTargetTeam">Target Team <span class="req">*</span></label>
                 <select id="awardTargetTeam" required>
-                  <option value="" disabled selected>-- Select competing squad --</option>
+                  <option value="" disabled selected>-- Select competing team --</option>
                 </select>
               </div>
 
@@ -496,26 +494,25 @@
             </form>
 
             <div class="live-preview-standings">
-              <h5><i class="fa-solid fa-list-ol"></i> Current Squad Ranking</h5>
+              <h5><i class="fa-solid fa-list-ol"></i> Current Team Ranking</h5>
               <div class="mini-standings-list" id="adminMiniStandings"></div>
             </div>
           </div>
         </div>
 
-        <!-- Tab B: Manage Squads -->
+        <!-- Tab B: Manage Teams -->
         <div id="adminTabSquads" class="admin-pane">
           <div class="pane-action-bar">
-            <h4>Participating Squads</h4>
-            <button id="openAddSquadBtn" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New Squad</button>
+            <h4>Participating Teams</h4>
+            <button id="openAddSquadBtn" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New Team</button>
           </div>
           <div class="table-wrap">
             <table class="clean-table">
               <thead>
                 <tr>
-                  <th>Color</th>
-                  <th>Squad Name</th>
-                  <th>Leader</th>
-                  <th>Volunteers</th>
+                  <th style="width: 50px;">#</th>
+                  <th>Team Name</th>
+                  <th>Team Leader</th>
                   <th>Score</th>
                   <th style="text-align: right;">Actions</th>
                 </tr>
@@ -622,12 +619,12 @@
             </div>
             <div class="tool-card">
               <h5><i class="fa-solid fa-file-code"></i> JSON Backup</h5>
-              <p>Download full backup including squads, scores and photos.</p>
+              <p>Download full backup including teams, scores and photos.</p>
               <button id="exportJsonBtn" class="btn btn-secondary btn-block">Export JSON</button>
             </div>
             <div class="tool-card">
               <h5><i class="fa-solid fa-rotate-right"></i> Reset Points to 0</h5>
-              <p>Reset points for all squads to start a fresh camp session.</p>
+              <p>Reset points for all teams to start a fresh camp session.</p>
               <button id="resetPointsBtn" class="btn btn-secondary btn-block" style="color: #D97706;">Reset Points</button>
             </div>
           </div>
@@ -637,62 +634,40 @@
     </div>
   </div>
 
-  <!-- ================= 7. ADD / EDIT SQUAD MODAL ================= -->
+  <!-- ================= 7. ADD / EDIT TEAM MODAL ================= -->
   <div id="squadModal" class="modal-backdrop" style="display: none;">
-    <div class="modal-box modal-md">
+    <div class="modal-box modal-sm">
       <div class="modal-header">
-        <h3 id="squadModalTitle">Add NSS Squad</h3>
+        <h3 id="squadModalTitle">Add New Team</h3>
         <button class="modal-close-btn" data-close="squadModal"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form id="squadForm" class="modal-body">
         <input type="hidden" id="editSquadId" value="">
 
         <div class="form-group">
-          <label for="squadNameInput">Squad Name <span class="req">*</span></label>
-          <input type="text" id="squadNameInput" placeholder="e.g. Team Vivekananda" required>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-half">
-            <label for="squadLeaderInput">Squad Leader <span class="req">*</span></label>
-            <input type="text" id="squadLeaderInput" placeholder="e.g. Rahul Shetty" required>
-          </div>
-          <div class="form-group col-half">
-            <label for="squadMembersInput">Volunteers Count</label>
-            <input type="number" id="squadMembersInput" value="14" min="1" max="100">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-half">
-            <label for="squadMottoInput">Motto</label>
-            <input type="text" id="squadMottoInput" placeholder="e.g. Arise and Awake">
-          </div>
-          <div class="form-group col-half">
-            <label for="squadColorInput">Color Theme</label>
-            <input type="color" id="squadColorInput" value="#1B2A6B" style="height: 40px; padding: 2px;">
-          </div>
+          <label for="squadNameInput">Team Name <span class="req">*</span></label>
+          <input type="text" id="squadNameInput" placeholder="e.g. Team Vivekananda" required autofocus>
         </div>
 
         <div class="form-group">
-          <label for="squadInitialPointsInput">Starting Points</label>
-          <input type="number" id="squadInitialPointsInput" value="0">
+          <label for="squadLeaderInput">Team Leader <span class="req">*</span></label>
+          <input type="text" id="squadLeaderInput" placeholder="e.g. Rahul Shetty" required>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close="squadModal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Squad</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Team</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ================= 8. SQUAD HISTORY AUDIT MODAL ================= -->
+  <!-- ================= 8. TEAM HISTORY AUDIT MODAL ================= -->
   <div id="historyModal" class="modal-backdrop" style="display: none;">
     <div class="modal-box modal-lg">
       <div class="modal-header">
         <div>
-          <h3 id="historyTeamName">Squad History</h3>
+          <h3 id="historyTeamName">Team History</h3>
           <p id="historyTeamSub">Point audit log</p>
         </div>
         <button class="modal-close-btn" data-close="historyModal"><i class="fa-solid fa-xmark"></i></button>

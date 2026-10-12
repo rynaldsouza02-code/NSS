@@ -21,7 +21,7 @@
 
   // ================= DEFAULT SETTINGS =================
   const DEFAULT_SETTINGS = {
-    eventTitle: 'Inter-Squad Camp Leaderboard',
+    eventTitle: 'Inter-Team Camp Leaderboard',
     eventSubtitle: 'Dr. B. B. Hegde First Grade College, Kundapura — Annual Special Camp 2026',
     campTag: 'Annual Special Camp 2026',
     adminPasscode: 'nss@2026',
@@ -453,7 +453,7 @@
     const sorted = getSortedTeams();
 
     if (sorted.length === 0) {
-      row.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 2rem; color:var(--text-secondary);">No squads enrolled.</div>`;
+      row.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 2rem; color:var(--text-secondary);">No teams enrolled.</div>`;
       return;
     }
 
@@ -521,12 +521,10 @@
               <div class="team-badge" style="background: ${team.color || '#1B2A6B'};">${initials}</div>
               <div>
                 <div class="team-title">${escapeHtml(team.name)}</div>
-                <div class="team-motto">"${escapeHtml(team.motto || 'Selfless Service')}"</div>
               </div>
             </div>
           </td>
           <td><strong>${escapeHtml(team.leader || '—')}</strong></td>
-          <td style="text-align: center;">${team.members || 14}</td>
           <td>
             ${recentAct 
               ? `<span style="color:var(--green); font-weight:700;">+${recentAct.points} pts</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${recentAct.category.split(' ')[0]})</span>` 
@@ -658,18 +656,17 @@
       `).join('');
     }
 
-    // Squads table
+    // Teams table
     if (squadsBody) {
-      squadsBody.innerHTML = teams.map(t => `
+      squadsBody.innerHTML = teams.map((t, idx) => `
         <tr>
-          <td><span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${t.color || '#1B2A6B'};"></span></td>
+          <td><span class="rank-pill" style="font-size:0.75rem; padding: 2px 7px;">#${idx + 1}</span></td>
           <td><strong>${escapeHtml(t.name)}</strong></td>
           <td>${escapeHtml(t.leader || '—')}</td>
-          <td>${t.members || 14}</td>
-          <td><strong>${t.points}</strong></td>
+          <td><strong>${t.points} pts</strong></td>
           <td style="text-align: right;">
-            <button class="action-btn edit-squad-btn" data-tid="${t.id}"><i class="fa-solid fa-pen"></i></button>
-            <button class="action-btn delete-squad-btn" data-tid="${t.id}" style="color:var(--nss-red);"><i class="fa-solid fa-trash"></i></button>
+            <button class="action-btn edit-squad-btn" data-tid="${t.id}" title="Edit Team"><i class="fa-solid fa-pen"></i></button>
+            <button class="action-btn delete-squad-btn" data-tid="${t.id}" style="color:var(--nss-red);" title="Delete Team"><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
       `).join('');
@@ -1117,7 +1114,7 @@
       showToast('Officer access granted', 'success');
     } else {
       const err = document.getElementById('authErrorMsg');
-      err.textContent = 'Invalid passcode! Default is nss@2026.';
+      err.textContent = 'Incorrect password. Please try again.';
       err.style.display = 'block';
       playChime(false);
     }
@@ -1143,7 +1140,7 @@
     const remark = document.getElementById('awardRemark').value.trim();
 
     if (!tid) {
-      showToast('Please choose a squad', 'error');
+      showToast('Please choose a team', 'error');
       return;
     }
     if (isNaN(delta) || delta === 0) {
@@ -1186,43 +1183,33 @@
   }
 
   function openAddSquad() {
-    document.getElementById('squadModalTitle').textContent = 'Add NSS Squad';
+    document.getElementById('squadModalTitle').textContent = 'Add New Team';
     document.getElementById('editSquadId').value = '';
     document.getElementById('squadNameInput').value = '';
     document.getElementById('squadLeaderInput').value = '';
-    document.getElementById('squadMembersInput').value = '14';
-    document.getElementById('squadMottoInput').value = '';
-    document.getElementById('squadColorInput').value = '#1B2A6B';
-    document.getElementById('squadInitialPointsInput').value = '0';
     openModal('squadModal');
   }
 
   function openEditSquad(tid) {
     const team = teams.find(t => t.id === tid);
     if (!team) return;
-    document.getElementById('squadModalTitle').textContent = 'Edit NSS Squad';
+    document.getElementById('squadModalTitle').textContent = 'Edit Team';
     document.getElementById('editSquadId').value = team.id;
     document.getElementById('squadNameInput').value = team.name;
     document.getElementById('squadLeaderInput').value = team.leader || '';
-    document.getElementById('squadMembersInput').value = team.members || 14;
-    document.getElementById('squadMottoInput').value = team.motto || '';
-    document.getElementById('squadColorInput').value = team.color || '#1B2A6B';
-    document.getElementById('squadInitialPointsInput').value = team.points;
     openModal('squadModal');
   }
+
+  const TEAM_COLORS = ['#1B2A6B', '#C8102E', '#0D9488', '#EA580C', '#7C3AED', '#2563EB', '#059669', '#D97706'];
 
   function handleSquadSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editSquadId').value;
     const name = document.getElementById('squadNameInput').value.trim();
     const leader = document.getElementById('squadLeaderInput').value.trim();
-    const members = parseInt(document.getElementById('squadMembersInput').value, 10) || 14;
-    const motto = document.getElementById('squadMottoInput').value.trim();
-    const color = document.getElementById('squadColorInput').value;
-    const pts = parseInt(document.getElementById('squadInitialPointsInput').value, 10) || 0;
 
     if (!name || !leader) {
-      showToast('Name and leader are required', 'error');
+      showToast('Team name and leader name are required', 'error');
       return;
     }
 
@@ -1231,26 +1218,23 @@
       if (team) {
         team.name = name;
         team.leader = leader;
-        team.members = members;
-        team.motto = motto;
-        team.color = color;
-        team.points = pts;
         team.lastUpdated = Date.now();
-        showToast(`Squad "${name}" updated`, 'success');
+        showToast(`Team "${name}" updated`, 'success');
       }
     } else {
+      const color = TEAM_COLORS[teams.length % TEAM_COLORS.length];
       teams.push({
         id: 'team-' + Date.now(),
         name,
         leader,
-        members,
-        motto: motto || 'Not Me But You',
+        members: 15,
+        motto: '',
         color,
-        points: pts,
+        points: 0,
         createdAt: Date.now(),
         lastUpdated: Date.now()
       });
-      showToast(`Enrolled "${name}"!`, 'success');
+      showToast(`Added Team "${name}"!`, 'success');
     }
 
     saveStateToStorage(true);
@@ -1266,7 +1250,7 @@
       activities = activities.filter(a => a.teamId !== tid);
       saveStateToStorage(true);
       renderAll();
-      showToast(`Squad removed`, 'info');
+      showToast(`Team removed`, 'info');
     }
   }
 
