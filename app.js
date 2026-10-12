@@ -30,35 +30,11 @@
   // ================= DEFAULT TEAMS (CLEARED) =================
   const DEFAULT_TEAMS = [];
 
-  // ================= DEFAULT ACTIVITIES (CLEARED) =================
-  const DEFAULT_ACTIVITIES = [];
-
-  // Helper to generate crisp SVG camp banner images for default demonstration
-  function createCampSvg(title, bg1, bg2, icon) {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
-        <defs>
-          <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${bg1};stop-opacity:1" />
-            <stop offset="100%" style="stop-color:${bg2};stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <rect width="600" height="380" fill="url(#g)" />
-        <circle cx="300" cy="155" r="54" fill="rgba(255,255,255,0.2)" />
-        <text x="300" y="178" font-family="'Outfit', sans-serif" font-size="46" fill="#FFFFFF" text-anchor="middle">${icon}</text>
-        <text x="300" y="255" font-family="'Plus Jakarta Sans', sans-serif" font-weight="bold" font-size="20" fill="#FFFFFF" text-anchor="middle">${title}</text>
-        <text x="300" y="285" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" fill="rgba(255,255,255,0.8)" text-anchor="middle">Dr. B. B. Hegde First Grade College &bull; NSS Special Camp</text>
-      </svg>
-    `.trim();
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-  }
-
   // Default Photos: cleared for now as requested
   const DEFAULT_PHOTOS = [];
 
   // ================= APP STATE =================
   let teams = [];
-  let activities = [];
   let photos = [];
   let settings = { ...DEFAULT_SETTINGS };
   let currentTheme = 'light';
@@ -163,7 +139,6 @@
 
       // Clean fresh start: always empty array if not explicitly set
       teams = storedTeams ? JSON.parse(storedTeams) : [];
-      activities = [];
       photos = storedPhotos ? JSON.parse(storedPhotos) : [];
 
       settings = storedSettings ? { ...DEFAULT_SETTINGS, ...JSON.parse(storedSettings) } : { ...DEFAULT_SETTINGS };
@@ -175,7 +150,6 @@
     } catch (e) {
       console.error('Storage load error:', e);
       teams = [];
-      activities = [];
       photos = [];
       settings = { ...DEFAULT_SETTINGS };
     }
@@ -492,42 +466,6 @@
     openModal('lightboxModal');
   }
 
-  // Activity Feed
-  function renderActivities() {
-    const timeline = document.getElementById('activityTimeline');
-    const filter = document.getElementById('activityTeamFilter');
-    const selectedTid = filter ? filter.value : 'ALL';
-
-    let list = [...activities];
-    if (selectedTid && selectedTid !== 'ALL') {
-      list = list.filter(a => a.teamId === selectedTid);
-    }
-
-    if (list.length === 0) {
-      timeline.innerHTML = `<div style="text-align:center; padding:2.5rem; color:var(--text-muted);"><p>No activity records logged.</p></div>`;
-      return;
-    }
-
-    timeline.innerHTML = list.map(act => {
-      const isNegative = act.points < 0;
-      return `
-        <div class="act-item ${isNegative ? 'negative' : ''}">
-          <div class="act-left">
-            <div class="act-icon"><i class="fa-solid fa-award"></i></div>
-            <div>
-              <div class="act-team">${escapeHtml(act.teamName)}</div>
-              <div class="act-cat">${escapeHtml(act.category)}</div>
-              ${act.remark ? `<div class="act-remark">${escapeHtml(act.remark)}</div>` : ''}
-            </div>
-          </div>
-          <div style="text-align: right;">
-            <div class="act-pts">${isNegative ? act.points : '+' + act.points} PTS</div>
-            <div class="act-time">${formatDate(act.timestamp)}</div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
 
   // Admin Views
   function renderAdminViews() {
@@ -606,20 +544,12 @@
 
   function populateSelects() {
     const awardSelect = document.getElementById('awardTargetTeam');
-    const actFilter = document.getElementById('activityTeamFilter');
     if (!awardSelect) return;
 
     const currentVal = awardSelect.value;
-    awardSelect.innerHTML = '<option value="" disabled selected>-- Select competing squad --</option>' +
+    awardSelect.innerHTML = '<option value="" disabled selected>-- Select competing team --</option>' +
       teams.map(t => `<option value="${t.id}">${escapeHtml(t.name)} (${t.points} pts)</option>`).join('');
     if (currentVal && teams.some(t => t.id === currentVal)) awardSelect.value = currentVal;
-
-    if (actFilter) {
-      const curFilter = actFilter.value;
-      actFilter.innerHTML = '<option value="ALL">All Competing Squads</option>' +
-        teams.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
-      if (curFilter) actFilter.value = curFilter;
-    }
   }
 
   // ================= 7. EVENT BINDINGS =================
@@ -791,8 +721,6 @@
     // Projector Fullscreen Mode
     document.getElementById('projectorBtn').addEventListener('click', toggleProjector);
 
-    // Activity filter
-    document.getElementById('activityTeamFilter').addEventListener('change', renderActivities);
 
     // Admin Auth
     document.getElementById('adminLoginBtn').addEventListener('click', openAdminAuth);
@@ -1129,7 +1057,6 @@
     if (!team) return;
     if (confirm(`Remove "${team.name}"?`)) {
       teams = teams.filter(t => t.id !== tid);
-      activities = activities.filter(a => a.teamId !== tid);
       saveStateToStorage(true);
       renderAll();
       showToast(`Team removed`, 'info');
@@ -1139,7 +1066,6 @@
   function clearAllTeams() {
     if (confirm('Are you sure you want to permanently clear all teams? This starts a 100% fresh leaderboard.')) {
       teams = [];
-      activities = [];
       saveStateToStorage(true);
       renderAll();
       showToast('All teams cleared. Fresh start active!', 'info');
@@ -1161,28 +1087,18 @@
   // Backup
   function exportCsv() {
     const sorted = getSortedTeams();
-    let csv = 'Rank,Squad Name,Leader,Volunteers,Points,Motto\n';
+    let csv = 'Rank,Team Name,Leader,Points\n';
     sorted.forEach((t, i) => {
-      csv += `${i + 1},"${t.name}","${t.leader || ''}",${t.members || 14},${t.points},"${t.motto || ''}"\n`;
+      csv += `${i + 1},"${t.name}","${t.leader || ''}",${t.points}\n`;
     });
     downloadBlob(csv, `NSS_Scores_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv');
     showToast('Exported CSV', 'success');
   }
 
   function exportJson() {
-    const data = { institution: 'Dr. B. B. Hegde College NSS', settings, teams, activities, photos };
+    const data = { institution: 'Dr. B. B. Hegde College NSS', settings, teams, photos };
     downloadBlob(JSON.stringify(data, null, 2), `NSS_Backup_${Date.now()}.json`, 'application/json');
     showToast('Exported JSON', 'success');
-  }
-
-  function resetPoints() {
-    if (confirm('Reset all squad scores to 0?')) {
-      teams.forEach(t => t.points = 0);
-      activities = [];
-      saveStateToStorage(true);
-      renderAll();
-      showToast('Points reset to 0', 'info');
-    }
   }
 
   function downloadBlob(content, name, type) {
