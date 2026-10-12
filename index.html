@@ -26,7 +26,7 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="styles.css?v=2026.5">
+  <link rel="stylesheet" href="styles.css?v=2026.8">
 </head>
 <body class="theme-light">
 
@@ -93,7 +93,6 @@
         <div class="nav-links">
           <button class="nav-link active" data-tab="leaderboard"><i class="fa-solid fa-trophy"></i> Live Leaderboard</button>
           <button class="nav-link" data-tab="gallery"><i class="fa-solid fa-camera"></i> Photos &amp; Memories</button>
-          <button class="nav-link" data-tab="activities"><i class="fa-solid fa-clock-rotate-left"></i> Point Activity Log</button>
           <button class="nav-link" data-tab="about"><i class="fa-solid fa-landmark"></i> About NSS Unit</button>
         </div>
         <div class="live-status-pill">
@@ -165,9 +164,7 @@
                   <th style="width: 75px; text-align: center;">Rank</th>
                   <th>Team Name</th>
                   <th>Team Leader</th>
-                  <th>Latest Activity Points</th>
                   <th style="text-align: right; width: 130px;">Points</th>
-                  <th style="text-align: center; width: 90px;">Audit</th>
                 </tr>
               </thead>
               <tbody id="standingsTableBody">
@@ -221,26 +218,7 @@
 
       </section>
 
-      <!-- ================= SECTION 3: ACTIVITIES FEED ================= -->
-      <section id="activitiesTab" class="tab-pane">
-        <div class="pane-header-row">
-          <div>
-            <h2 class="pane-title"><i class="fa-solid fa-clock-rotate-left"></i> Point Award History</h2>
-            <p class="pane-subtitle">Complete chronological record of all awarded and deducted points.</p>
-          </div>
-          <div>
-            <select id="activityTeamFilter" class="simple-select">
-              <option value="ALL">All Competing Teams</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="activity-timeline" id="activityTimeline">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-
-      <!-- ================= SECTION 4: ABOUT NSS ================= -->
+      <!-- ================= SECTION 3: ABOUT NSS ================= -->
       <section id="aboutTab" class="tab-pane">
         <div class="about-grid">
           <div class="about-panel">
@@ -469,28 +447,9 @@
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="form-group col-half">
-                  <label for="awardPointsAmount">Points <span class="req">*</span></label>
-                  <input type="number" id="awardPointsAmount" placeholder="e.g. 50" required>
-                </div>
-                <div class="form-group col-half">
-                  <label for="awardCategory">Activity Category <span class="req">*</span></label>
-                  <select id="awardCategory" required>
-                    <option value="Shramadaan (Community Service)">Shramadaan (Community Service)</option>
-                    <option value="Cultural Performance">Cultural Performance &amp; Skit</option>
-                    <option value="Camp Discipline & Punctuality">Camp Discipline &amp; Uniform</option>
-                    <option value="Camp Craft & Tenting">Camp Craft &amp; Layout</option>
-                    <option value="Wall Journal / Daily Diary">Daily Wall Journal</option>
-                    <option value="Sports & Team Relay">Sports &amp; Team Building</option>
-                    <option value="Disciplinary Penalty">Disciplinary Penalty</option>
-                  </select>
-                </div>
-              </div>
-
               <div class="form-group">
-                <label for="awardRemark">Remarks / Event Details</label>
-                <input type="text" id="awardRemark" placeholder="e.g. Canal cleaning near Kundapura bridge">
+                <label for="awardPointsAmount">Points <span class="req">*</span></label>
+                <input type="number" id="awardPointsAmount" placeholder="e.g. 50 (or negative like -20)" required>
               </div>
 
               <button type="submit" class="btn btn-primary btn-block btn-lg">
@@ -632,6 +591,11 @@
               <p>Reset points for all teams to start a fresh camp session.</p>
               <button id="resetPointsBtn" class="btn btn-secondary btn-block" style="color: #D97706;">Reset Points</button>
             </div>
+            <div class="tool-card" style="border-color: rgba(220, 38, 38, 0.35);">
+              <h5 style="color: var(--nss-red);"><i class="fa-solid fa-trash-can"></i> Clear All Teams</h5>
+              <p>Permanently remove all teams and points for a 100% fresh start.</p>
+              <button id="clearAllTeamsBtn" class="btn btn-secondary btn-block" style="color: var(--nss-red); font-weight: 700;">Clear All Teams</button>
+            </div>
           </div>
         </div>
 
@@ -667,26 +631,10 @@
     </div>
   </div>
 
-  <!-- ================= 8. TEAM HISTORY AUDIT MODAL ================= -->
-  <div id="historyModal" class="modal-backdrop" style="display: none;">
-    <div class="modal-box modal-lg">
-      <div class="modal-header">
-        <div>
-          <h3 id="historyTeamName">Team History</h3>
-          <p id="historyTeamSub">Point audit log</p>
-        </div>
-        <button class="modal-close-btn" data-close="historyModal"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div id="historyTimelineList" class="activity-timeline"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <!-- Main JavaScript -->
-  <script src="app.js?v=2026.5"></script>
+  <script src="app.js?v=2026.8"></script>
 </body>
 </html>

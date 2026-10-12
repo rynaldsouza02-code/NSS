@@ -9,15 +9,14 @@
 
   // ================= STORAGE KEYS =================
   const STORAGE_KEYS = {
-    TEAMS: 'nss_teams_data_v3',
-    ACTIVITIES: 'nss_activities_data_v3',
-    PHOTOS: 'nss_photos_data_v3',
-    SETTINGS: 'nss_settings_data_v3',
-    THEME: 'nss_theme_pref_v3',
-    ADMIN_SESSION: 'nss_admin_auth_session_v3'
+    TEAMS: 'nss_teams_data_v4',
+    PHOTOS: 'nss_photos_data_v4',
+    SETTINGS: 'nss_settings_data_v4',
+    THEME: 'nss_theme_pref_v4',
+    ADMIN_SESSION: 'nss_admin_auth_session_v4'
   };
 
-  const BROADCAST_CHANNEL_NAME = 'nss_live_sync_v3';
+  const BROADCAST_CHANNEL_NAME = 'nss_live_sync_v4';
 
   // ================= DEFAULT SETTINGS =================
   const DEFAULT_SETTINGS = {
@@ -148,52 +147,24 @@
   // ================= 3. STORAGE & BROADCAST =================
   function loadStateFromStorage() {
     try {
-      // Purge old legacy keys (v1 and v2) from visitors' browsers/phones so outdated 'squad' data is removed
-      ['nss_teams_data', 'nss_teams_data_v2', 'nss_settings_data', 'nss_settings_data_v2', 'nss_activities_data', 'nss_activities_data_v2'].forEach(k => {
+      // Purge all legacy storage keys (v1, v2, v3) from visitors' browsers/phones so everything starts completely fresh
+      [
+        'nss_teams_data', 'nss_teams_data_v2', 'nss_teams_data_v3',
+        'nss_settings_data', 'nss_settings_data_v2', 'nss_settings_data_v3',
+        'nss_activities_data', 'nss_activities_data_v2', 'nss_activities_data_v3',
+        'nss_photos_data', 'nss_photos_data_v2'
+      ].forEach(k => {
         try { localStorage.removeItem(k); } catch (_) {}
       });
 
       let storedTeams = localStorage.getItem(STORAGE_KEYS.TEAMS);
-      let storedActivities = localStorage.getItem(STORAGE_KEYS.ACTIVITIES);
       let storedPhotos = localStorage.getItem(STORAGE_KEYS.PHOTOS);
       let storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
 
-      // If stored data on device contains legacy "squad", invalidate it
-      if (storedSettings && storedSettings.toLowerCase().includes('squad')) {
-        storedSettings = null;
-        localStorage.removeItem(STORAGE_KEYS.SETTINGS);
-      }
-
-      // Check if stored teams are the old dummy demo teams (e.g. Team Vivekananda with 460 pts)
-      if (storedTeams) {
-        try {
-          const parsed = JSON.parse(storedTeams);
-          const hasDummy = parsed.some(t => (t.id === 'team-1' && t.points === 460) || (t.motto && t.motto.includes('Arise, Awake')));
-          if (hasDummy) {
-            storedTeams = null;
-            localStorage.removeItem(STORAGE_KEYS.TEAMS);
-            localStorage.removeItem(STORAGE_KEYS.ACTIVITIES);
-            storedActivities = null;
-          }
-        } catch (_) {}
-      }
-
+      // Clean fresh start: always empty array if not explicitly set
       teams = storedTeams ? JSON.parse(storedTeams) : [];
-      activities = storedActivities ? JSON.parse(storedActivities) : [];
-      
-      // Clean photos state
-      if (storedPhotos) {
-        try {
-          const parsed = JSON.parse(storedPhotos);
-          const hasDummy = parsed.some(p => p.id && p.id.startsWith('photo-'));
-          photos = hasDummy ? [] : parsed;
-        } catch (e) {
-          photos = [];
-        }
-      } else {
-        photos = [];
-      }
-      localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
+      activities = [];
+      photos = storedPhotos ? JSON.parse(storedPhotos) : [];
 
       settings = storedSettings ? { ...DEFAULT_SETTINGS, ...JSON.parse(storedSettings) } : { ...DEFAULT_SETTINGS };
       settings.eventTitle = 'Inter-Team Camp Leaderboard';
@@ -203,8 +174,8 @@
       }
     } catch (e) {
       console.error('Storage load error:', e);
-      teams = JSON.parse(JSON.stringify(DEFAULT_TEAMS));
-      activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+      teams = [];
+      activities = [];
       photos = [];
       settings = { ...DEFAULT_SETTINGS };
     }
@@ -213,7 +184,6 @@
   function saveStateToStorage(broadcast = true, updatedTeamId = null, pointsDelta = 0) {
     try {
       localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
-      localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(activities));
       localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
 
@@ -350,7 +320,6 @@
     renderPodium();
     renderTable();
     renderGallery();
-    renderActivities();
     renderAdminViews();
     populateSelects();
   }
@@ -427,14 +396,26 @@
     if (filtered.length === 0) {
       tbody.innerHTML = '';
       noTeams.style.display = 'block';
+      if (teams.length === 0) {
+        noTeams.innerHTML = `
+          <i class="fa-solid fa-users empty-ico"></i>
+          <h4>No Teams Enrolled Yet</h4>
+          <p>NSS Officers can add participating teams using the Admin Portal.</p>
+        `;
+      } else {
+        noTeams.innerHTML = `
+          <i class="fa-solid fa-magnifying-glass empty-ico"></i>
+          <h4>No Matching Teams Found</h4>
+          <p>No teams match your search query.</p>
+        `;
+      }
       return;
     }
     noTeams.style.display = 'none';
 
     tbody.innerHTML = filtered.map(team => {
       const rank = sorted.findIndex(t => t.id === team.id) + 1;
-      const initials = team.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'SQ';
-      const recentAct = activities.find(a => a.teamId === team.id);
+      const initials = team.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'TM';
 
       let rankClass = '';
       if (rank === 1) rankClass = 'gold';
@@ -455,28 +436,12 @@
             </div>
           </td>
           <td><strong>${escapeHtml(team.leader || '—')}</strong></td>
-          <td>
-            ${recentAct 
-              ? `<span style="color:var(--green); font-weight:700;">+${recentAct.points} pts</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${recentAct.category.split(' ')[0]})</span>` 
-              : '<span style="color:var(--text-muted); font-size:0.78rem;">Enrolled</span>'}
-          </td>
           <td style="text-align: right;">
             <span class="points-text">${team.points}</span>
-          </td>
-          <td style="text-align: center;">
-            <button class="action-btn view-history-btn" data-tid="${team.id}" title="Audit Log">
-              <i class="fa-solid fa-list-check"></i>
-            </button>
           </td>
         </tr>
       `;
     }).join('');
-
-    tbody.querySelectorAll('.view-history-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        openHistoryModal(e.currentTarget.getAttribute('data-tid'));
-      });
-    });
   }
 
   // Photos Gallery
@@ -873,6 +838,8 @@
     document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
     document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
     document.getElementById('resetPointsBtn').addEventListener('click', resetPoints);
+    const clearTeamsBtn = document.getElementById('clearAllTeamsBtn');
+    if (clearTeamsBtn) clearTeamsBtn.addEventListener('click', clearAllTeams);
 
     // Close buttons & Backdrop clicks
     document.querySelectorAll('.modal-close-btn, [data-close]').forEach(btn => {
@@ -896,11 +863,9 @@
 
     document.getElementById('leaderboardTab').classList.toggle('active', tab === 'leaderboard');
     document.getElementById('galleryTab').classList.toggle('active', tab === 'gallery');
-    document.getElementById('activitiesTab').classList.toggle('active', tab === 'activities');
     document.getElementById('aboutTab').classList.toggle('active', tab === 'about');
 
     if (tab === 'gallery') renderGallery();
-    if (tab === 'activities') renderActivities();
   }
 
   function toggleProjector() {
@@ -1066,8 +1031,6 @@
     e.preventDefault();
     const tid = document.getElementById('awardTargetTeam').value;
     const delta = parseInt(document.getElementById('awardPointsAmount').value, 10);
-    const category = document.getElementById('awardCategory').value;
-    const remark = document.getElementById('awardRemark').value.trim();
 
     if (!tid) {
       showToast('Please choose a team', 'error');
@@ -1085,16 +1048,6 @@
     team.points = (Number(team.points) || 0) + delta;
     team.lastUpdated = Date.now();
 
-    activities.unshift({
-      id: 'act-' + Date.now(),
-      teamId: team.id,
-      teamName: team.name,
-      points: delta,
-      category,
-      remark: remark || `Awarded for ${category}`,
-      timestamp: Date.now()
-    });
-
     saveStateToStorage(true, team.id, delta);
     renderAll();
 
@@ -1109,7 +1062,6 @@
     }
 
     document.getElementById('awardPointsAmount').value = '';
-    document.getElementById('awardRemark').value = '';
   }
 
   function openAddSquad() {
@@ -1184,34 +1136,26 @@
     }
   }
 
-  function openHistoryModal(tid) {
-    const team = teams.find(t => t.id === tid);
-    if (!team) return;
-
-    document.getElementById('historyTeamName').textContent = team.name;
-    document.getElementById('historyTeamSub').textContent = `Captain: ${team.leader || '—'} &bull; Score: ${team.points} pts`;
-
-    const list = document.getElementById('historyTimelineList');
-    const teamActs = activities.filter(a => a.teamId === team.id);
-
-    if (teamActs.length === 0) {
-      list.innerHTML = `<p style="text-align:center; padding:1.5rem; color:var(--text-muted);">No activity logged yet. Base score: ${team.points} pts.</p>`;
-    } else {
-      list.innerHTML = teamActs.map(act => `
-        <div class="act-item ${act.points < 0 ? 'negative' : ''}">
-          <div>
-            <strong>${escapeHtml(act.category)}</strong>
-            <div style="font-size:0.75rem; color:var(--text-secondary);">${escapeHtml(act.remark || '')}</div>
-            <small style="color:var(--text-muted); font-size:0.7rem;">${formatDate(act.timestamp)}</small>
-          </div>
-          <strong style="font-size:1.05rem; color:${act.points < 0 ? 'var(--nss-red)' : 'var(--green)'};">
-            ${act.points < 0 ? act.points : '+' + act.points} PTS
-          </strong>
-        </div>
-      `).join('');
+  function clearAllTeams() {
+    if (confirm('Are you sure you want to permanently clear all teams? This starts a 100% fresh leaderboard.')) {
+      teams = [];
+      activities = [];
+      saveStateToStorage(true);
+      renderAll();
+      showToast('All teams cleared. Fresh start active!', 'info');
     }
+  }
 
-    openModal('historyModal');
+  function resetPoints() {
+    if (confirm('Reset scores for ALL teams to 0?')) {
+      teams.forEach(t => {
+        t.points = 0;
+        t.lastUpdated = Date.now();
+      });
+      saveStateToStorage(true);
+      renderAll();
+      showToast('All team points reset to 0', 'info');
+    }
   }
 
   // Backup
