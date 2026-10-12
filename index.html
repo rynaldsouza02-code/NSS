@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NSS Unit | Dr. B. B. Hegde First Grade College, Kundapura</title>
+  <meta name="description" content="Official Live Leaderboard and Photo Gallery for the NSS Unit of Dr. B. B. Hegde First Grade College, Kundapura. A Unit of Coondapur Education Society (R).">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/nss-logo.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-light">
+
+  <!-- ================= 1. INTRO SPLASH TRANSITION ================= -->
+  <div id="introSplash" class="intro-splash-overlay">
+    <div class="splash-content">
+      <div class="splash-logos">
+        <img src="assets/college-logo.png" alt="College Emblem" class="splash-logo college-splash-logo">
+        <div class="splash-divider"></div>
+        <img src="assets/nss-logo.png" alt="NSS Emblem" class="splash-logo nss-splash-logo">
+      </div>
+      <div class="splash-titles">
+        <span class="splash-society">A Unit of Coondapur Education Society (R)</span>
+        <h1 class="splash-college">Dr. B. B. Hegde First Grade College</h1>
+        <p class="splash-location">Kundapura &bull; Udupi District, Karnataka</p>
+        <div class="splash-motto-tag">
+          <span class="pulse-dot"></span>
+          <span>NATIONAL SERVICE SCHEME &bull; "NOT ME BUT YOU"</span>
+        </div>
+      </div>
+      <div class="splash-loader">
+        <div class="splash-progress-bar"></div>
+      </div>
+      <button id="skipSplashBtn" class="splash-skip-btn">Skip &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ================= 2. MAIN APPLICATION ================= -->
+  <div id="app" class="app-container">
+
+    <!-- Clean Header -->
+    <header class="main-header">
+      <div class="header-inner">
+        <!-- Left: Logos & Title -->
+        <div class="header-brand">
+          <div class="header-logos-group">
+            <img src="assets/college-logo.png" alt="College Logo" class="brand-logo">
+            <img src="assets/nss-logo.png" alt="NSS Logo" class="brand-logo">
+          </div>
+          <div class="header-text">
+            <span class="inst-society">A Unit of Coondapur Education Society (R)</span>
+            <h1 class="inst-title">Dr. B. B. Hegde First Grade College, Kundapura</h1>
+            <p class="inst-subtitle">National Service Scheme (NSS Unit) &bull; Motto: <em>"NOT ME BUT YOU"</em></p>
+          </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="header-actions">
+          <button id="themeToggleBtn" class="action-btn theme-btn" title="Toggle Light / Dark Mode">
+            <i class="fa-solid fa-moon" id="themeIcon"></i>
+            <span id="themeText">Dark</span>
+          </button>
+          <button id="projectorBtn" class="action-btn" title="Auditorium Fullscreen Mode">
+            <i class="fa-solid fa-expand"></i> <span>Projector</span>
+          </button>
+          <button id="adminLoginBtn" class="action-btn admin-btn" title="Admin Scoring & Management">
+            <i class="fa-solid fa-lock"></i> <span>Admin Portal</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Simple Nav Tabs -->
+      <nav class="simple-navbar">
+        <div class="nav-links">
+          <button class="nav-link active" data-tab="leaderboard"><i class="fa-solid fa-trophy"></i> Live Leaderboard</button>
+          <button class="nav-link" data-tab="gallery"><i class="fa-solid fa-camera"></i> Photos &amp; Memories</button>
+          <button class="nav-link" data-tab="activities"><i class="fa-solid fa-clock-rotate-left"></i> Point Activity Log</button>
+          <button class="nav-link" data-tab="about"><i class="fa-solid fa-landmark"></i> About NSS Unit</button>
+        </div>
+        <div class="live-status-pill">
+          <span class="live-dot"></span>
+          <span>LIVE SYNC ACTIVE</span>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-content">
+
+      <!-- ================= SECTION 1: LEADERBOARD ================= -->
+      <section id="leaderboardTab" class="tab-pane active">
+        
+        <!-- Camp Event Banner -->
+        <div class="camp-banner">
+          <div class="banner-info">
+            <div class="banner-chip" id="campTag"><i class="fa-solid fa-campground"></i> Annual Special Camp 2026</div>
+            <h2 class="banner-heading" id="eventTitle">Inter-Squad Camp Leaderboard</h2>
+            <p class="banner-subheading" id="eventSubtitle">Real-time point scoring for Shramadaan, Cultural Events, Camp Discipline &amp; Community Service.</p>
+          </div>
+          <div class="banner-stats">
+            <div class="stat-box">
+              <span class="stat-num" id="totalTeamsCount">0</span>
+              <span class="stat-lbl">Competing Squads</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="totalPointsCount">0</span>
+              <span class="stat-lbl">Total Points</span>
+            </div>
+            <div class="stat-box leader-box">
+              <span class="stat-num leader-name" id="leadingSquadName">—</span>
+              <span class="stat-lbl">🏆 Current #1 Leader</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 3 Quick Podium -->
+        <div class="podium-row" id="podiumRow">
+          <!-- Populated by JS: 2nd, 1st, 3rd -->
+        </div>
+
+        <!-- Clean, Simple Scoreboard Table -->
+        <div class="scoreboard-card">
+          <div class="scoreboard-header">
+            <div>
+              <h3 class="scoreboard-title"><i class="fa-solid fa-list-ol"></i> Squad Standings Table</h3>
+              <p class="scoreboard-desc">Live ranked scores updated instantaneously from the admin scoring desk.</p>
+            </div>
+            <div class="scoreboard-tools">
+              <!-- Search Box -->
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search team or leader..." autocomplete="off">
+                <button id="clearSearchBtn" class="clear-btn" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <button id="soundToggleBtn" class="icon-tool-btn" title="Toggle Scoring Sound Effects">
+                <i class="fa-solid fa-volume-high"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Clean Table -->
+          <div class="table-wrap">
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th style="width: 75px; text-align: center;">Rank</th>
+                  <th>Squad Name &amp; Motto</th>
+                  <th>Squad Leader</th>
+                  <th style="text-align: center; width: 110px;">Volunteers</th>
+                  <th>Latest Activity Points</th>
+                  <th style="text-align: right; width: 130px;">Points</th>
+                  <th style="text-align: center; width: 90px;">Audit</th>
+                </tr>
+              </thead>
+              <tbody id="standingsTableBody">
+                <!-- Rendered by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div id="noTeamsState" class="empty-box" style="display: none;">
+            <i class="fa-solid fa-users-slash empty-ico"></i>
+            <h4>No Squads Found</h4>
+            <p>No squads currently match your search query.</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= SECTION 2: PHOTOS & MEMORIES ================= -->
+      <section id="galleryTab" class="tab-pane">
+        
+        <!-- Gallery Header -->
+        <div class="gallery-toolbar">
+          <div>
+            <h2 class="pane-title"><i class="fa-solid fa-camera-retro"></i> Camp Photos &amp; Memories</h2>
+            <p class="pane-subtitle">Memorable moments from Shramadaan, Cultural Evenings, Youth Leadership, and Village Service.</p>
+          </div>
+          <div class="gallery-controls">
+            <!-- Filter Chips -->
+            <div class="filter-group" id="galleryFilterGroup">
+              <button class="filter-btn active" data-category="ALL">All Photos</button>
+              <button class="filter-btn" data-category="Shramadaan">Shramadaan</button>
+              <button class="filter-btn" data-category="Cultural">Cultural Night</button>
+              <button class="filter-btn" data-category="Camp Life">Camp Life</button>
+              <button class="filter-btn" data-category="Community">Community Service</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Photos Grid -->
+        <div class="photo-grid" id="photoGrid">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Empty Photos State -->
+        <div id="noPhotosState" class="empty-box" style="display: none;">
+          <i class="fa-solid fa-camera-retro empty-ico"></i>
+          <h4>No Camp Photos Added Yet</h4>
+          <p>Official camp photos and memories uploaded by the NSS officers in the Admin section will appear here.</p>
+        </div>
+
+      </section>
+
+      <!-- ================= SECTION 3: ACTIVITIES FEED ================= -->
+      <section id="activitiesTab" class="tab-pane">
+        <div class="pane-header-row">
+          <div>
+            <h2 class="pane-title"><i class="fa-solid fa-clock-rotate-left"></i> Point Award History</h2>
+            <p class="pane-subtitle">Complete chronological record of all awarded and deducted points.</p>
+          </div>
+          <div>
+            <select id="activityTeamFilter" class="simple-select">
+              <option value="ALL">All Competing Squads</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="activity-timeline" id="activityTimeline">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: ABOUT NSS ================= -->
+      <section id="aboutTab" class="tab-pane">
+        <div class="about-grid">
+          <div class="about-panel">
+            <div class="panel-head">
+              <img src="assets/college-logo.png" alt="College Logo" class="panel-logo">
+              <div>
+                <h3>Dr. B. B. Hegde First Grade College, Kundapura</h3>
+                <p>A Unit of Coondapur Education Society (R) &bull; Est. 2010</p>
+                <div class="motto-badge">College Motto: "Truth &amp; Honesty - Live to Learn"</div>
+              </div>
+            </div>
+            <p class="about-desc">
+              Dr. B. B. Hegde First Grade College, Kundapura is a premier institution affiliated with Mangalore University, dedicated to fostering academic excellence, moral integrity, and social commitment.
+            </p>
+          </div>
+
+          <div class="about-panel nss-panel">
+            <div class="panel-head">
+              <img src="assets/nss-logo.png" alt="NSS Logo" class="panel-logo">
+              <div>
+                <h3>National Service Scheme (NSS Unit)</h3>
+                <p>Ministry of Youth Affairs and Sports &bull; Govt. of India</p>
+                <div class="motto-badge red-badge">NSS Motto: "NOT ME BUT YOU"</div>
+              </div>
+            </div>
+            <p class="about-desc">
+              The NSS fosters selfless service, community leadership, and civic responsibility among youth through social camps, village development, and cultural harmony.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <div>
+          <p>&copy; 2026 <strong>Dr. B. B. Hegde First Grade College, Kundapura</strong>. A Unit of Coondapur Education Society (R).</p>
+          <p class="footer-small">NSS Unit &bull; Real-time Scoring &amp; Live Leaderboard System</p>
+        </div>
+        <div class="footer-right">
+          <span class="live-pill"><i class="fa-solid fa-wifi"></i> Instant Multi-Tab Sync</span>
+          <button id="footerAdminBtn" class="footer-login-btn"><i class="fa-solid fa-shield-halved"></i> Officer Login</button>
+        </div>
+      </div>
+    </footer>
+
+  </div> <!-- /app-container -->
+
+  <!-- ================= 3. ADD PHOTO MODAL ================= -->
+  <div id="addPhotoModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="icon-circle photo-icon"><i class="fa-solid fa-camera"></i></div>
+          <div>
+            <h3>Add Camp Photo</h3>
+            <p>Upload a memory to the NSS gallery</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close="addPhotoModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="addPhotoForm" class="modal-body">
+        <div class="form-group">
+          <label>Photo Upload Method</label>
+          <div class="radio-toggle-group">
+            <label class="radio-toggle">
+              <input type="radio" name="uploadType" value="file" checked>
+              <span><i class="fa-solid fa-folder-open"></i> Upload from Device</span>
+            </label>
+            <label class="radio-toggle">
+              <input type="radio" name="uploadType" value="url">
+              <span><i class="fa-solid fa-link"></i> Web Image URL</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- File Upload Area -->
+        <div class="form-group" id="fileUploadGroup">
+          <label for="photoFileInput">Select Image File</label>
+          <input type="file" id="photoFileInput" accept="image/*" class="file-input">
+          <p class="field-hint">Supports PNG, JPG, JPEG, WebP. Images are optimized automatically.</p>
+        </div>
+
+        <!-- URL Upload Area -->
+        <div class="form-group" id="urlUploadGroup" style="display: none;">
+          <label for="photoUrlInput">Paste Image URL</label>
+          <input type="url" id="photoUrlInput" placeholder="https://example.com/camp-photo.jpg">
+        </div>
+
+        <!-- Live Preview -->
+        <div class="form-group">
+          <label>Image Preview</label>
+          <div class="preview-box" id="previewBox">
+            <div class="preview-empty">
+              <i class="fa-solid fa-image"></i>
+              <span>No image selected yet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="photoTitleInput">Caption / Title <span class="req">*</span></label>
+          <input type="text" id="photoTitleInput" placeholder="e.g. Morning Shramadaan at Adopted Village School" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="photoCategorySelect">Event Category <span class="req">*</span></label>
+            <select id="photoCategorySelect" required>
+              <option value="Shramadaan">Shramadaan</option>
+              <option value="Cultural">Cultural Night</option>
+              <option value="Camp Life">Camp Life</option>
+              <option value="Community">Community Service</option>
+              <option value="Inauguration">Inauguration &amp; Assembly</option>
+            </select>
+          </div>
+          <div class="form-group col-half">
+            <label for="photoDateInput">Camp Day / Session</label>
+            <input type="text" id="photoDateInput" placeholder="e.g. Day 3 &bull; Morning">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="addPhotoModal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save &amp; Publish Photo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 4. PHOTO LIGHTBOX MODAL ================= -->
+  <div id="lightboxModal" class="modal-backdrop lightbox-wrap" style="display: none;">
+    <div class="lightbox-box">
+      <button class="lightbox-close" data-close="lightboxModal"><i class="fa-solid fa-xmark"></i></button>
+      <img id="lightboxImage" src="" alt="Camp Memory" class="lightbox-photo">
+      <div class="lightbox-info">
+        <span class="lightbox-tag" id="lightboxTag">Category</span>
+        <h4 id="lightboxHeading">Title</h4>
+        <p id="lightboxSub">Date</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 5. ADMIN AUTH MODAL ================= -->
+  <div id="authModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box modal-sm">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="icon-circle admin-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div>
+            <h3>Officer Verification</h3>
+            <p>Enter passcode to access scoring controls</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" data-close="authModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="authForm" class="modal-body">
+        <div class="form-group">
+          <label for="adminPasscode">Security Passcode</label>
+          <div class="pwd-input-wrap">
+            <input type="password" id="adminPasscode" placeholder="Enter PIN (Default: nss@2026)" required autofocus>
+            <button type="button" id="togglePasswordBtn" class="pwd-toggle"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <p class="field-hint">Default passcode is <code>nss@2026</code>.</p>
+        </div>
+        <div id="authErrorMsg" class="error-banner" style="display: none;"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="authModal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-unlock"></i> Unlock Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 6. ADMIN DASHBOARD MODAL ================= -->
+  <div id="adminModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box modal-xl">
+      <div class="modal-header admin-head">
+        <div class="modal-title-wrap">
+          <div class="icon-circle admin-icon"><i class="fa-solid fa-sliders"></i></div>
+          <div>
+            <span class="admin-badge">NSS OFFICER &amp; SCORING DESK</span>
+            <h3>Camp Administration Portal</h3>
+          </div>
+        </div>
+        <div class="header-right-tools">
+          <button id="adminLogoutBtn" class="btn btn-sm btn-ghost"><i class="fa-solid fa-right-from-bracket"></i> Exit</button>
+          <button class="modal-close-btn" data-close="adminModal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <!-- Admin Tabs -->
+      <div class="admin-tab-bar">
+        <button class="admin-tab-btn active" data-atab="award"><i class="fa-solid fa-plus-minus"></i> Award Points</button>
+        <button class="admin-tab-btn" data-atab="squads"><i class="fa-solid fa-users"></i> Manage Squads (<span id="adminSquadsCount">0</span>)</button>
+        <button class="admin-tab-btn" data-atab="photos"><i class="fa-solid fa-images"></i> Manage Photos (<span id="adminPhotosCount">0</span>)</button>
+        <button class="admin-tab-btn" data-atab="data"><i class="fa-solid fa-database"></i> Backup &amp; Reset</button>
+      </div>
+
+      <div class="modal-body admin-content-body">
+        
+        <!-- Tab A: Award Points -->
+        <div id="adminTabAward" class="admin-pane active">
+          <div class="scoring-grid">
+            <form id="awardPointsForm" class="award-form">
+              <h4><i class="fa-solid fa-star"></i> Quick Score Entry</h4>
+
+              <div class="form-group">
+                <label for="awardTargetTeam">Target Squad <span class="req">*</span></label>
+                <select id="awardTargetTeam" required>
+                  <option value="" disabled selected>-- Select competing squad --</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Quick Preset (+ / -)</label>
+                <div class="quick-preset-btns">
+                  <button type="button" class="preset-btn" data-pts="10">+10</button>
+                  <button type="button" class="preset-btn" data-pts="25">+25</button>
+                  <button type="button" class="preset-btn" data-pts="50">+50</button>
+                  <button type="button" class="preset-btn" data-pts="100">+100</button>
+                  <button type="button" class="preset-btn red-preset" data-pts="-10">-10</button>
+                  <button type="button" class="preset-btn red-preset" data-pts="-25">-25</button>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="awardPointsAmount">Points <span class="req">*</span></label>
+                  <input type="number" id="awardPointsAmount" placeholder="e.g. 50" required>
+                </div>
+                <div class="form-group col-half">
+                  <label for="awardCategory">Activity Category <span class="req">*</span></label>
+                  <select id="awardCategory" required>
+                    <option value="Shramadaan (Community Service)">Shramadaan (Community Service)</option>
+                    <option value="Cultural Performance">Cultural Performance &amp; Skit</option>
+                    <option value="Camp Discipline & Punctuality">Camp Discipline &amp; Uniform</option>
+                    <option value="Camp Craft & Tenting">Camp Craft &amp; Layout</option>
+                    <option value="Wall Journal / Daily Diary">Daily Wall Journal</option>
+                    <option value="Sports & Team Relay">Sports &amp; Team Building</option>
+                    <option value="Disciplinary Penalty">Disciplinary Penalty</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="awardRemark">Remarks / Event Details</label>
+                <input type="text" id="awardRemark" placeholder="e.g. Canal cleaning near Kundapura bridge">
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg">
+                <i class="fa-solid fa-paper-plane"></i> Commit Points Live
+              </button>
+            </form>
+
+            <div class="live-preview-standings">
+              <h5><i class="fa-solid fa-list-ol"></i> Current Squad Ranking</h5>
+              <div class="mini-standings-list" id="adminMiniStandings"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab B: Manage Squads -->
+        <div id="adminTabSquads" class="admin-pane">
+          <div class="pane-action-bar">
+            <h4>Participating Squads</h4>
+            <button id="openAddSquadBtn" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New Squad</button>
+          </div>
+          <div class="table-wrap">
+            <table class="clean-table">
+              <thead>
+                <tr>
+                  <th>Color</th>
+                  <th>Squad Name</th>
+                  <th>Leader</th>
+                  <th>Volunteers</th>
+                  <th>Score</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminSquadsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab C: Manage Photos -->
+        <div id="adminTabPhotos" class="admin-pane">
+          <div class="admin-photo-tools-layout">
+            <!-- Left: Add Photo Form -->
+            <form id="adminDirectPhotoForm" class="award-form">
+              <h4><i class="fa-solid fa-camera"></i> Add Camp Photo to Gallery</h4>
+
+              <div class="form-group">
+                <label>Photo Source</label>
+                <div class="radio-toggle-group">
+                  <label class="radio-toggle">
+                    <input type="radio" name="adminPhotoSource" value="file" checked>
+                    <span><i class="fa-solid fa-upload"></i> Device File</span>
+                  </label>
+                  <label class="radio-toggle">
+                    <input type="radio" name="adminPhotoSource" value="url">
+                    <span><i class="fa-solid fa-link"></i> Image URL</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- File Input -->
+              <div class="form-group" id="adminPhotoFileGroup">
+                <label for="adminPhotoFileInput">Select Image File <span class="req">*</span></label>
+                <input type="file" id="adminPhotoFileInput" accept="image/*" class="file-input">
+                <p class="field-hint">PNG, JPG, WebP. Compressed automatically.</p>
+              </div>
+
+              <!-- URL Input -->
+              <div class="form-group" id="adminPhotoUrlGroup" style="display: none;">
+                <label for="adminPhotoUrlInput">Image Web URL <span class="req">*</span></label>
+                <input type="url" id="adminPhotoUrlInput" placeholder="https://example.com/camp-photo.jpg">
+              </div>
+
+              <!-- Preview -->
+              <div class="form-group">
+                <label>Preview</label>
+                <div class="preview-box" id="adminPhotoPreviewBox">
+                  <div class="preview-empty">
+                    <i class="fa-solid fa-image"></i>
+                    <span>No image selected</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="adminPhotoTitleInput">Caption / Title <span class="req">*</span></label>
+                <input type="text" id="adminPhotoTitleInput" placeholder="e.g. Village Road Shramadaan" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="adminPhotoCatSelect">Category <span class="req">*</span></label>
+                  <select id="adminPhotoCatSelect" required>
+                    <option value="Shramadaan">Shramadaan</option>
+                    <option value="Cultural">Cultural Night</option>
+                    <option value="Camp Life">Camp Life</option>
+                    <option value="Community">Community Service</option>
+                    <option value="Inauguration">Inauguration / Assembly</option>
+                  </select>
+                </div>
+                <div class="form-group col-half">
+                  <label for="adminPhotoDateInput">Camp Day / Session</label>
+                  <input type="text" id="adminPhotoDateInput" placeholder="e.g. Day 2 &bull; Morning">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload &amp; Publish Photo
+              </button>
+            </form>
+
+            <!-- Right: Current Gallery Management -->
+            <div class="live-preview-standings">
+              <div class="pane-action-bar" style="margin-bottom: 0.5rem;">
+                <h5><i class="fa-solid fa-images"></i> Published Photos (<span id="adminPhotosCountBadge">0</span>)</h5>
+                <button type="button" id="adminClearAllPhotosBtn" class="action-btn" style="color: var(--nss-red); font-size: 0.72rem;">
+                  <i class="fa-solid fa-trash-can"></i> Clear All Photos
+                </button>
+              </div>
+              <div class="admin-photos-grid" id="adminPhotosGrid">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab D: Backup & Reset -->
+        <div id="adminTabData" class="admin-pane">
+          <div class="tools-grid">
+            <div class="tool-card">
+              <h5><i class="fa-solid fa-file-csv"></i> Export CSV</h5>
+              <p>Download the latest scoreboard as a spreadsheet.</p>
+              <button id="exportCsvBtn" class="btn btn-secondary btn-block">Download CSV</button>
+            </div>
+            <div class="tool-card">
+              <h5><i class="fa-solid fa-file-code"></i> JSON Backup</h5>
+              <p>Download full backup including squads, scores and photos.</p>
+              <button id="exportJsonBtn" class="btn btn-secondary btn-block">Export JSON</button>
+            </div>
+            <div class="tool-card">
+              <h5><i class="fa-solid fa-rotate-right"></i> Reset Points to 0</h5>
+              <p>Reset points for all squads to start a fresh camp session.</p>
+              <button id="resetPointsBtn" class="btn btn-secondary btn-block" style="color: #D97706;">Reset Points</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 7. ADD / EDIT SQUAD MODAL ================= -->
+  <div id="squadModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <h3 id="squadModalTitle">Add NSS Squad</h3>
+        <button class="modal-close-btn" data-close="squadModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="squadForm" class="modal-body">
+        <input type="hidden" id="editSquadId" value="">
+
+        <div class="form-group">
+          <label for="squadNameInput">Squad Name <span class="req">*</span></label>
+          <input type="text" id="squadNameInput" placeholder="e.g. Team Vivekananda" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="squadLeaderInput">Squad Leader <span class="req">*</span></label>
+            <input type="text" id="squadLeaderInput" placeholder="e.g. Rahul Shetty" required>
+          </div>
+          <div class="form-group col-half">
+            <label for="squadMembersInput">Volunteers Count</label>
+            <input type="number" id="squadMembersInput" value="14" min="1" max="100">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="squadMottoInput">Motto</label>
+            <input type="text" id="squadMottoInput" placeholder="e.g. Arise and Awake">
+          </div>
+          <div class="form-group col-half">
+            <label for="squadColorInput">Color Theme</label>
+            <input type="color" id="squadColorInput" value="#1B2A6B" style="height: 40px; padding: 2px;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="squadInitialPointsInput">Starting Points</label>
+          <input type="number" id="squadInitialPointsInput" value="0">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close="squadModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Squad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 8. SQUAD HISTORY AUDIT MODAL ================= -->
+  <div id="historyModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 id="historyTeamName">Squad History</h3>
+          <p id="historyTeamSub">Point audit log</p>
+        </div>
+        <button class="modal-close-btn" data-close="historyModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div id="historyTimelineList" class="activity-timeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
