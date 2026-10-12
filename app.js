@@ -9,15 +9,15 @@
 
   // ================= STORAGE KEYS =================
   const STORAGE_KEYS = {
-    TEAMS: 'nss_teams_data_v2',
-    ACTIVITIES: 'nss_activities_data_v2',
-    PHOTOS: 'nss_photos_data_v2',
-    SETTINGS: 'nss_settings_data_v2',
-    THEME: 'nss_theme_pref_v2',
-    ADMIN_SESSION: 'nss_admin_auth_session_v2'
+    TEAMS: 'nss_teams_data_v3',
+    ACTIVITIES: 'nss_activities_data_v3',
+    PHOTOS: 'nss_photos_data_v3',
+    SETTINGS: 'nss_settings_data_v3',
+    THEME: 'nss_theme_pref_v3',
+    ADMIN_SESSION: 'nss_admin_auth_session_v3'
   };
 
-  const BROADCAST_CHANNEL_NAME = 'nss_live_sync_v2';
+  const BROADCAST_CHANNEL_NAME = 'nss_live_sync_v3';
 
   // ================= DEFAULT SETTINGS =================
   const DEFAULT_SETTINGS = {
@@ -252,15 +252,26 @@
   // ================= 3. STORAGE & BROADCAST =================
   function loadStateFromStorage() {
     try {
-      const storedTeams = localStorage.getItem(STORAGE_KEYS.TEAMS);
-      const storedActivities = localStorage.getItem(STORAGE_KEYS.ACTIVITIES);
-      const storedPhotos = localStorage.getItem(STORAGE_KEYS.PHOTOS);
-      const storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      // Purge old legacy keys (v1 and v2) from visitors' browsers/phones so outdated 'squad' data is removed
+      ['nss_teams_data', 'nss_teams_data_v2', 'nss_settings_data', 'nss_settings_data_v2', 'nss_activities_data', 'nss_activities_data_v2'].forEach(k => {
+        try { localStorage.removeItem(k); } catch (_) {}
+      });
+
+      let storedTeams = localStorage.getItem(STORAGE_KEYS.TEAMS);
+      let storedActivities = localStorage.getItem(STORAGE_KEYS.ACTIVITIES);
+      let storedPhotos = localStorage.getItem(STORAGE_KEYS.PHOTOS);
+      let storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+
+      // If stored data on device contains legacy "squad", invalidate it
+      if (storedSettings && storedSettings.toLowerCase().includes('squad')) {
+        storedSettings = null;
+        localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+      }
 
       teams = storedTeams ? JSON.parse(storedTeams) : JSON.parse(JSON.stringify(DEFAULT_TEAMS));
       activities = storedActivities ? JSON.parse(storedActivities) : JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
       
-      // Photos: cleared for now as requested
+      // Clean photos state
       if (storedPhotos) {
         try {
           const parsed = JSON.parse(storedPhotos);
@@ -275,6 +286,7 @@
       localStorage.setItem(STORAGE_KEYS.PHOTOS, JSON.stringify(photos));
 
       settings = storedSettings ? { ...DEFAULT_SETTINGS, ...JSON.parse(storedSettings) } : { ...DEFAULT_SETTINGS };
+      settings.eventTitle = 'Inter-Team Camp Leaderboard';
 
       if (!storedTeams) {
         saveStateToStorage(false);
@@ -283,7 +295,7 @@
       console.error('Storage load error:', e);
       teams = JSON.parse(JSON.stringify(DEFAULT_TEAMS));
       activities = JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
-      photos = JSON.parse(JSON.stringify(DEFAULT_PHOTOS));
+      photos = [];
       settings = { ...DEFAULT_SETTINGS };
     }
   }
