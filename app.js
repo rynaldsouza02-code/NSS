@@ -28,115 +28,11 @@
     soundEnabled: true
   };
 
-  // ================= DEFAULT TEAMS =================
-  const DEFAULT_TEAMS = [
-    {
-      id: 'team-1',
-      name: 'Team Vivekananda',
-      leader: 'Rahul Shetty',
-      members: 14,
-      motto: 'Arise, Awake and Stop Not Till The Goal Is Reached',
-      color: '#1B2A6B',
-      points: 460,
-      createdAt: Date.now() - 86400000 * 2,
-      lastUpdated: Date.now() - 3600000 * 2
-    },
-    {
-      id: 'team-2',
-      name: 'Team Rani Abbakka',
-      leader: 'Pooja Poojary',
-      members: 15,
-      motto: 'Valour, Unity and Dedicated Service',
-      color: '#C41E3A',
-      points: 435,
-      createdAt: Date.now() - 86400000 * 2,
-      lastUpdated: Date.now() - 3600000 * 4
-    },
-    {
-      id: 'team-3',
-      name: 'Team Kanakadasa',
-      leader: 'Suhas Naik',
-      members: 14,
-      motto: 'Devotion, Humility and Social Harmony',
-      color: '#059669',
-      points: 390,
-      createdAt: Date.now() - 86400000 * 2,
-      lastUpdated: Date.now() - 3600000 * 6
-    },
-    {
-      id: 'team-4',
-      name: 'Team Ashoka',
-      leader: 'Karthik Hegde',
-      members: 14,
-      motto: 'Truth, Non-Violence and Service',
-      color: '#D97706',
-      points: 350,
-      createdAt: Date.now() - 86400000 * 2,
-      lastUpdated: Date.now() - 3600000 * 8
-    },
-    {
-      id: 'team-5',
-      name: 'Team Netaji',
-      leader: 'Ananya Kamath',
-      members: 13,
-      motto: 'Courage and Patriotism in Action',
-      color: '#7C3AED',
-      points: 310,
-      createdAt: Date.now() - 86400000 * 2,
-      lastUpdated: Date.now() - 3600000 * 12
-    },
-    {
-      id: 'team-6',
-      name: 'Team Kaveri',
-      leader: 'Prateek Acharya',
-      members: 14,
-      motto: 'Nurturing Land, Culture and Life',
-      color: '#0891B2',
-      points: 285,
-      createdAt: Date.now() - 86400000 * 2,
-      lastUpdated: Date.now() - 3600000 * 16
-    }
-  ];
+  // ================= DEFAULT TEAMS (CLEARED) =================
+  const DEFAULT_TEAMS = [];
 
-  // ================= DEFAULT ACTIVITIES =================
-  const DEFAULT_ACTIVITIES = [
-    {
-      id: 'act-1',
-      teamId: 'team-1',
-      teamName: 'Team Vivekananda',
-      points: 50,
-      category: 'Shramadaan (Community Service)',
-      remark: 'Village main canal cleaning & stone-bund repair',
-      timestamp: Date.now() - 3600000 * 2
-    },
-    {
-      id: 'act-2',
-      teamId: 'team-2',
-      teamName: 'Team Rani Abbakka',
-      points: 40,
-      category: 'Cultural Performance',
-      remark: 'Yakshagana presentation & patriotic street play',
-      timestamp: Date.now() - 3600000 * 4
-    },
-    {
-      id: 'act-3',
-      teamId: 'team-3',
-      teamName: 'Team Kanakadasa',
-      points: 30,
-      category: 'Camp Craft & Tenting',
-      remark: 'Exemplary morning camp layout & tent hygiene',
-      timestamp: Date.now() - 3600000 * 6
-    },
-    {
-      id: 'act-4',
-      teamId: 'team-4',
-      teamName: 'Team Ashoka',
-      points: 25,
-      category: 'Wall Journal / Daily Diary',
-      remark: 'Daily camp chronicle with handwritten Kannada poems',
-      timestamp: Date.now() - 3600000 * 8
-    }
-  ];
+  // ================= DEFAULT ACTIVITIES (CLEARED) =================
+  const DEFAULT_ACTIVITIES = [];
 
   // Helper to generate crisp SVG camp banner images for default demonstration
   function createCampSvg(title, bg1, bg2, icon) {
@@ -268,8 +164,22 @@
         localStorage.removeItem(STORAGE_KEYS.SETTINGS);
       }
 
-      teams = storedTeams ? JSON.parse(storedTeams) : JSON.parse(JSON.stringify(DEFAULT_TEAMS));
-      activities = storedActivities ? JSON.parse(storedActivities) : JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES));
+      // Check if stored teams are the old dummy demo teams (e.g. Team Vivekananda with 460 pts)
+      if (storedTeams) {
+        try {
+          const parsed = JSON.parse(storedTeams);
+          const hasDummy = parsed.some(t => (t.id === 'team-1' && t.points === 460) || (t.motto && t.motto.includes('Arise, Awake')));
+          if (hasDummy) {
+            storedTeams = null;
+            localStorage.removeItem(STORAGE_KEYS.TEAMS);
+            localStorage.removeItem(STORAGE_KEYS.ACTIVITIES);
+            storedActivities = null;
+          }
+        } catch (_) {}
+      }
+
+      teams = storedTeams ? JSON.parse(storedTeams) : [];
+      activities = storedActivities ? JSON.parse(storedActivities) : [];
       
       // Clean photos state
       if (storedPhotos) {
@@ -465,7 +375,13 @@
     const sorted = getSortedTeams();
 
     if (sorted.length === 0) {
-      row.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 2rem; color:var(--text-secondary);">No teams enrolled.</div>`;
+      row.innerHTML = `
+        <div class="podium-empty-box">
+          <div class="icon-circle" style="margin: 0 auto 0.75rem;"><i class="fa-solid fa-trophy"></i></div>
+          <h4>No Teams Enrolled Yet</h4>
+          <p>NSS Officers can add participating teams and start scoring in the Admin Portal.</p>
+        </div>
+      `;
       return;
     }
 
@@ -481,7 +397,7 @@
   }
 
   function createPodiumCard(team, rank) {
-    const initials = team.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'SQ';
+    const initials = team.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'TM';
     const badgeText = rank === 1 ? '<i class="fa-solid fa-crown"></i>' : `#${rank}`;
     return `
       <div class="podium-card rank-${rank}">
@@ -489,9 +405,11 @@
         <div class="podium-avatar" style="background: ${team.color || '#1B2A6B'};">
           ${initials}
         </div>
-        <h4 class="podium-name">${escapeHtml(team.name)}</h4>
-        <p class="podium-sub">Leader: ${escapeHtml(team.leader || '—')}</p>
-        <div>
+        <div class="podium-info">
+          <h4 class="podium-name">${escapeHtml(team.name)}</h4>
+          <p class="podium-sub">Leader: ${escapeHtml(team.leader || '—')}</p>
+        </div>
+        <div class="podium-score-pill">
           <span class="podium-points">${team.points}</span>
           <span class="podium-unit">PTS</span>
         </div>
