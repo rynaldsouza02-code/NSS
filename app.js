@@ -52,6 +52,8 @@
   let isCloudSyncActive = false;
   let isReceivingCloudUpdate = false;
   const FIREBASE_SYNC_NODE = 'nss_camp_live_v1';
+  // Central Firebase Database URL embedded in app code so ALL devices sync automatically without manual setup
+  const DEFAULT_FIREBASE_DB_URL = 'https://bbhc-nss-default-rtdb.firebaseio.com';
 
   // ================= INITIALIZATION =================
   function init() {
@@ -189,8 +191,9 @@
   // ================= FIREBASE REALTIME CLOUD SYNC =================
   function initFirebase() {
     const savedConfig = localStorage.getItem('nss_firebase_config_v1');
-    if (savedConfig) {
-      connectFirebase(savedConfig, false);
+    const target = (savedConfig && savedConfig.trim()) ? savedConfig : DEFAULT_FIREBASE_DB_URL;
+    if (target && target.trim()) {
+      connectFirebase(target, false);
     } else {
       updateCloudSyncStatusUI(false);
     }
@@ -203,15 +206,20 @@
     }
     try {
       let configObj = null;
-      let trimmed = rawInput.trim();
+      let trimmed = (typeof rawInput === 'string' ? rawInput : JSON.stringify(rawInput)).trim();
 
       if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
         configObj = JSON.parse(trimmed);
       } else if (trimmed.startsWith('http')) {
-        configObj = { databaseURL: trimmed };
+        configObj = { databaseURL: trimmed.replace(/\/+$/, '') };
       }
 
       if (!configObj || !configObj.databaseURL) {
+        if (rawInput !== DEFAULT_FIREBASE_DB_URL && DEFAULT_FIREBASE_DB_URL) {
+          localStorage.removeItem('nss_firebase_config_v1');
+          connectFirebase(DEFAULT_FIREBASE_DB_URL, false);
+          return;
+        }
         if (showFeedback) showToast('Please enter a valid Firebase Realtime Database URL', 'error');
         return;
       }
@@ -231,6 +239,11 @@
       }
     } catch (err) {
       console.error('Firebase connection error:', err);
+      if (rawInput !== DEFAULT_FIREBASE_DB_URL && DEFAULT_FIREBASE_DB_URL) {
+        localStorage.removeItem('nss_firebase_config_v1');
+        connectFirebase(DEFAULT_FIREBASE_DB_URL, false);
+        return;
+      }
       updateCloudSyncStatusUI(false);
       if (showFeedback) showToast('Failed to connect to Firebase: ' + err.message, 'error');
     }
@@ -242,7 +255,13 @@
 
     ref.on('value', (snapshot) => {
       const data = snapshot.val();
-      if (!data) return;
+      if (!data) {
+        // Cloud database is new/empty: auto-seed with local teams if present so data is never lost
+        if (teams && teams.length > 0) {
+          pushToFirebase();
+        }
+        return;
+      }
 
       isReceivingCloudUpdate = true;
       try {
@@ -330,7 +349,7 @@
     });
 
     if (input && connected) {
-      const saved = localStorage.getItem('nss_firebase_config_v1');
+      const saved = localStorage.getItem('nss_firebase_config_v1') || DEFAULT_FIREBASE_DB_URL;
       if (saved) {
         try {
           const cfg = JSON.parse(saved);
