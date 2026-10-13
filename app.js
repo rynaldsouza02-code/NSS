@@ -255,6 +255,8 @@
 
     ref.on('value', (snapshot) => {
       const data = snapshot.val();
+      updateCloudSyncStatusUI(true);
+
       if (!data) {
         // Cloud database is new/empty: auto-seed with local teams if present so data is never lost
         if (teams && teams.length > 0) {
@@ -304,6 +306,12 @@
       }
     }, (err) => {
       console.warn('Firebase sync listener error:', err);
+      if (err && (err.code === 'PERMISSION_DENIED' || (err.message && err.message.includes('permission_denied')))) {
+        updateCloudSyncStatusUI(false, 'PERMISSION_DENIED');
+        showToast('⚠️ Firebase Permission Locked: In Firebase Console -> Realtime Database -> Rules, set read:true, write:true and click Publish!', 'error');
+      } else {
+        updateCloudSyncStatusUI(false);
+      }
     });
   }
 
@@ -317,13 +325,21 @@
         lastUpdated: Date.now(),
         updatedTeamId,
         delta
+      }).then(() => {
+        updateCloudSyncStatusUI(true);
+      }).catch((err) => {
+        console.warn('Firebase push error:', err);
+        if (err && (err.code === 'PERMISSION_DENIED' || (err.message && err.message.includes('permission_denied')))) {
+          updateCloudSyncStatusUI(false, 'PERMISSION_DENIED');
+          showToast('⚠️ Cannot sync to other phones: Firebase Rules are locked! In Firebase Console -> Rules, set read:true, write:true and click Publish.', 'error');
+        }
       });
     } catch (err) {
       console.warn('Firebase push error:', err);
     }
   }
 
-  function updateCloudSyncStatusUI(connected) {
+  function updateCloudSyncStatusUI(connected, reason = null) {
     isCloudSyncActive = connected;
     const badge = document.getElementById('cloudSyncStatusBadge');
     const livePills = document.querySelectorAll('.live-status-pill');
@@ -332,6 +348,8 @@
     if (badge) {
       if (connected) {
         badge.innerHTML = '<span class="live-dot" style="background:#16A34A;"></span><span>LIVE CLOUD SYNC ACTIVE</span>';
+      } else if (reason === 'PERMISSION_DENIED') {
+        badge.innerHTML = '<span class="live-dot" style="background:#DC2626;"></span><span>FIREBASE RULES LOCKED (401)</span>';
       } else {
         badge.innerHTML = '<span class="live-dot" style="background:#D97706;"></span><span>LOCAL MODE (OFFLINE)</span>';
       }
@@ -342,6 +360,9 @@
       if (connected) {
         p.innerHTML = '<span class="live-dot" style="background:#16A34A;"></span><span>CLOUD SYNC ACTIVE</span>';
         p.title = 'Changes instantly reflect on all phones & screens worldwide';
+      } else if (reason === 'PERMISSION_DENIED') {
+        p.innerHTML = '<span class="live-dot" style="background:#DC2626;"></span><span>RULES LOCKED (401)</span>';
+        p.title = 'Firebase Permission Denied! Set .read:true, .write:true in Firebase Console Rules tab';
       } else {
         p.innerHTML = '<span class="live-dot" style="background:#D97706;"></span><span>LOCAL MODE</span>';
         p.title = 'Saved on this browser. Connect Firebase in Admin to sync across all phones';
